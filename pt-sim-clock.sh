@@ -7,4 +7,4 @@ echo "Using input file $1"
 # ./pt-sim.x $1
 # and it will read from stdin, as normal
 
-./PT.out $1 B < $2
+./PT.out $1 B
