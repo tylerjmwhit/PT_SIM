@@ -6,34 +6,44 @@
 #include <bitset>
 
 using namespace std;
+const static int bitsize = 64;
 
+// Holds all the information about a single page
 struct page{
-	int valid;
-	int perm;
-	int frame;
-	string bframe;
-	int LRU;
+	int valid; // statues of valid bit
+	int perm; // status of permission bits
+	int frame; //frame number
+	string bframe; // frame number in binary
+	int LRU; // recently used bit
 };
 
+// holds all the information about the page table
 struct pageTable{
-	int n;
-	int m;
-	int size;
-	int vec_size;
-	int pvec_szie;
-	vector<page> table;
-	void init_sizes(){
+	int n; // number of bits in virtual address
+	int m; // number of bits in physical address
+	int size; // Size of page in bytes
+	int vec_size; // size of virtual address table
+	vector<page> table; //vector holding all the pages
+	void init_sizes(){ // init vector table after n, m and size are read in
 		vec_size = exp2(n - log2(size));
-		pvec_szie = exp2(m - log2(size));
 		table.resize(vec_size);
 	}
 };
+
 
 struct clockS{
 	page* currentPage;
 	int position;
 };
 
+/*
+FUNCTION Prototype: pageTable create_table(char* filename);
+INTENT: Reads in a file and creates a page table out of the file
+@param char* filename: Name of the file to turn into pagetable
+@return: pageTable struct containing the page table
+@post: pageTable is returned to the calling function
+@pre: a valid filename needs to be obtained
+*/
 pageTable create_table(char* filename){
 	pageTable vtable;
 	ifstream inputFile;
@@ -50,18 +60,29 @@ pageTable create_table(char* filename){
 			vtable.table.at(i).frame >> vtable.table.at(i).LRU;
 		vtable.table.at(i).bframe = bitset<16>(vtable.table.at(i).frame).to_string();
 	}
-
 	return vtable;
 }
 
-void translate(string& tempinput, int& off, int& location, int& output, const pageTable& tablein){
+/*
+FUNCTION Prototype: void translate(string& tempinput, int& off, int& location, int& output, const pageTable& tablein);
+INTENT: Helper function to handles the translation of a virtual address into a physical address
+@param const string& tempinput: string containing virtual address
+@param const int& off: number of offset bits
+@param int& location: location of entry in pagetable
+@param int& output: physical address version of virtual address
+@param const pageTable& tablein: struct holding the page table
+@return:  nothing function is void
+@post: int& location will contain the location of the virtual address in the pagetable. int& output will now contain the string representing the translation from virtual to physical address
+@pre: tablein needs to contain a valid pagetable
+*/
+void translate(const string& tempinput, const int& off, int& location, int& output, const pageTable& tablein){
 	int temp_int;
 	string binary;
 	string pnumber;
 	string offset;
 
 	temp_int = stoi(tempinput, nullptr, 0);
-	binary = bitset<16>(temp_int).to_string();
+	binary = bitset<bitsize>(temp_int).to_string();
 	offset = binary.substr(off);
 	pnumber = binary.substr(0,off);
 	location = stoi(pnumber, nullptr,2);
@@ -76,7 +97,7 @@ void translate_address_B(pageTable tablein){
 	string offset;
 	int output;
 	int location;
-	int off = 16 - log2(tablein.size);
+	int off = bitsize - log2(tablein.size);
 	while(getline(cin,tempinput)){
 		translate(tempinput, off, location, output, tablein);
 		if(tablein.table.at(location).valid){
@@ -120,11 +141,20 @@ void translate_address_B(pageTable tablein){
 	}
 }
 
+/*
+FUNCTION Prototype: void translate_address_A(pageTable tablein);
+INTENT: Handles the translation of a virtual address into a physical address
+doesn‘t use any page replacement algorithm
+@param const pageTable& tablein: struct holding the page table
+@return:  nothing function is void
+@post: nothing
+@pre: tablein needs to contain a valid pagetable
+*/
 void translate_address_A(pageTable tablein){
 	string input;
 	int output;
 	int location;
-	int off = 16 - log2(tablein.size);
+	int off = bitsize - log2(tablein.size);
 	while(getline(cin,input)){
 		translate(input, off, location, output, tablein);
 		if(tablein.table.at(location).valid){
