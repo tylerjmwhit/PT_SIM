@@ -30,10 +30,10 @@ struct pageTable{
 	}
 };
 
-
+// Represents the clock used in our page replacement algorithm
 struct clockS{
-	page* currentPage;
-	int position;
+	page* currentPage;// Pointer to single page entry
+	int position;// Current position of the clock
 };
 
 /*
@@ -89,6 +89,15 @@ void translate(const string& tempinput, const int& off, int& location, int& outp
 	output = stoi(tablein.table.at(location).bframe + offset, nullptr,2);
 }
 
+/*
+FUNCTION NAME: void translate_address_B(pageTable tablein);
+INTENT: This function uses the clock algorithm to evict pages when a request
+		for a invalid page entry comes in.
+@param: pageTable tablein: struct containing Page Table
+@post: After this function is complete, all translated addresses will be output
+ 	   and the page table will be updated with the evicted page entries
+@pre: Page Table should be created with valid page entries
+*/
 void translate_address_B(pageTable tablein){
 	clockS clock;
 	clock.currentPage = &tablein.table[0];
