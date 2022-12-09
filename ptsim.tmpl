@@ -242,7 +242,16 @@ frames
  page entry and an integer to keep track of its position. We increment the
  position and then point the currentPage pointer to the next page in our
  page table.
-(ii):
+(ii): We are currently representing each page as a struct holding 4 ints and a
+string so it is very space inefficient. In order to make the page more efficient
+we could store all the information about the page as bits which would require
+1 bit for valid, 3 bits for permission, 1 more bit for the LRU bit, then the
+amount of bits for the frame is determined by size of the page table. The
+formula to determine this is
+	exp2(physical_address_size - log2(size _of_page_in_bytes))
+Using this representation of the page we can save a ton of space but our logic
+to translate the addresses becomes much more complicated.
+
 */
 
 ---- RATIONALE ----
